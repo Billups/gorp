@@ -121,7 +121,7 @@ func (d SqliteDialect) ToSqlType(val reflect.Type, maxsize int, isAutoIncr bool)
 		return "real"
 	case "NullBool":
 		return "integer"
-	case "Time":
+	case "NullTime", "Time":
 		return "datetime"
 	}
 
@@ -229,7 +229,7 @@ func (d PostgresDialect) ToSqlType(val reflect.Type, maxsize int, isAutoIncr boo
 		return "double precision"
 	case "NullBool":
 		return "boolean"
-	case "Time":
+	case "NullTime", "Time":
 		return "timestamp with time zone"
 	}
 
@@ -360,7 +360,7 @@ func (d MySQLDialect) ToSqlType(val reflect.Type, maxsize int, isAutoIncr bool) 
 		return "double"
 	case "NullBool":
 		return "tinyint"
-	case "Time":
+	case "NullTime", "Time":
 		return "datetime"
 	}
 
@@ -491,7 +491,7 @@ func (d SqlServerDialect) ToSqlType(val reflect.Type, maxsize int, isAutoIncr bo
 		return "float(53)"
 	case "NullBool":
 		return "tinyint"
-	case "Time":
+	case "NullTime", "Time":
 		return "datetime"
 	}
 

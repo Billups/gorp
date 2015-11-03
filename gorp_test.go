@@ -6,10 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
-	_ "github.com/ziutek/mymysql/godrv"
 	"log"
 	"math/rand"
 	"os"
@@ -17,6 +13,11 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/ziutek/mymysql/godrv"
 )
 
 // verify interface compliance
@@ -485,6 +486,16 @@ func TestPersistentUser(t *testing.T) {
 		t.Errorf("%v!=%v", pu, pu2)
 	}
 
+	// prove we can fill a struct pointer from GetOne
+	puFill := &PersistentUser{}
+	err = dbmap.GetOne(puFill, pu.Key)
+	if err != nil {
+		panic(err)
+	}
+	if !reflect.DeepEqual(pu, puFill) {
+		t.Errorf("%v!=%v", pu, puFill)
+	}
+
 	arr, err := dbmap.Select(pu, "select * from PersistentUser")
 	if err != nil {
 		panic(err)
@@ -946,6 +957,16 @@ func TestTransaction(t *testing.T) {
 		panic(err)
 	}
 	trans.Insert(inv1, inv2)
+
+	invFill := &Invoice{}
+	err = trans.GetOne(invFill, inv1.Id)
+	if err != nil {
+		panic(err)
+	}
+	if !reflect.DeepEqual(inv1, invFill) {
+		t.Errorf("%v != %v", inv1, invFill)
+	}
+
 	err = trans.Commit()
 	if err != nil {
 		panic(err)
@@ -1045,6 +1066,104 @@ func TestCrud(t *testing.T) {
 
 	foo := &AliasTransientField{BarStr: "some bar"}
 	testCrudInternal(t, dbmap, foo)
+}
+
+func TestTableFor(t *testing.T) {
+	type UnknownTable struct{}
+	dbmap := initDbMap()
+	defer dropAndClose(dbmap)
+
+	_, err := dbmap.Get(UnknownTable{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	err = dbmap.GetOne(&UnknownTable{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	trans, err := dbmap.Begin()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	_, err = trans.Get(UnknownTable{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	err = trans.GetOne(&UnknownTable{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	err = trans.Rollback()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+}
+
+func TestMustBeStructPtr(t *testing.T) {
+	type UnknownTable struct{}
+	dbmap := initDbMap()
+	defer dropAndClose(dbmap)
+
+	err := dbmap.GetOne(UnknownTable{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	trans, err := dbmap.Begin()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	err = trans.GetOne(UnknownTable{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	err = trans.Rollback()
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestMustBeStruct(t *testing.T) {
+	dbmap := initDbMap()
+	defer dropAndClose(dbmap)
+
+	_, err := dbmap.Get([]int64{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	err = dbmap.GetOne([]int64{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	trans, err := dbmap.Begin()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	_, err = trans.Get([]int64{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	err = trans.GetOne([]int64{}, 1)
+	if err == nil {
+		t.Errorf("Expected: Error, Actual: nil")
+	}
+
+	err = trans.Rollback()
+	if err != nil {
+		t.Error(err.Error())
+	}
 }
 
 func testCrudInternal(t *testing.T, dbmap *DbMap, val testable) {

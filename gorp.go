@@ -17,12 +17,12 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"reflect"
 	"regexp"
 	"strings"
 	"time"
-	"log"
-	"os"
 )
 
 // Oracle String (empty string is null)
@@ -1020,6 +1020,29 @@ func (m *DbMap) Get(i interface{}, keys ...interface{}) (interface{}, error) {
 	return get(m, m, i, keys...)
 }
 
+// GetOne runs a SQL SELECT to fetch a single row from the table based on the
+// primary key(s) and binds the result to i, which must be a pointer.
+//
+// If no row is found, an error (sql.ErrNoRows specifically) will be returned
+//
+// If more than one row is found, an error will be returned.
+//
+func (m *DbMap) GetOne(i interface{}, keys ...interface{}) error {
+	t, err := toType(i)
+	if err != nil {
+		return err
+	}
+
+	table, err := m.TableFor(t, true)
+	if err != nil {
+		return err
+	}
+
+	plan := table.bindGet()
+
+	return m.SelectOne(i, plan.query, keys...)
+}
+
 // Select runs an arbitrary SQL query, binding the columns in the result
 // to fields on the struct specified by i.  args represent the bind
 // parameters for the SQL statement.
@@ -1209,6 +1232,23 @@ func (t *Transaction) Delete(list ...interface{}) (int64, error) {
 // Get has the same behavior as DbMap.Get(), but runs in a transaction.
 func (t *Transaction) Get(i interface{}, keys ...interface{}) (interface{}, error) {
 	return get(t.dbmap, t, i, keys...)
+}
+
+// GetOne has the same behavior as DbMap.GetOne(), but runs in a transaction.
+func (t *Transaction) GetOne(i interface{}, keys ...interface{}) error {
+	ty, err := toType(i)
+	if err != nil {
+		return err
+	}
+
+	table, err := t.dbmap.TableFor(ty, true)
+	if err != nil {
+		return err
+	}
+
+	plan := table.bindGet()
+
+	return t.SelectOne(i, plan.query, keys...)
 }
 
 // Select has the same behavior as DbMap.Select(), but runs in a transaction.

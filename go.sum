@@ -1,3 +1,5 @@
+github.com/Billups/gorp v1.7.3 h1:PbksH0CVYNupUCZstPl4TyJZhreJhX4cftVWsLGpoUk=
+github.com/Billups/gorp v1.7.3/go.mod h1:ZrwznqEnl0dYgBdRJYdz62kyDN360IeII2dDsUb15tM=
 github.com/apoydence/onpar v0.0.0-20190519213022-ee068f8ea4d1 h1:vToH0A6ByBaoM/A/4AwxgHKFgzcufNcYQfDcp60uW3M=
 github.com/apoydence/onpar v0.0.0-20190519213022-ee068f8ea4d1/go.mod h1:maauOJD0kdDqIz4xmkunipFVbBoTM6pFSy0kkWBcIUY=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=

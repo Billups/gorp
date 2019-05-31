@@ -1,8 +1,9 @@
-module github.com/Billups/gorp
+module gopkg.in/Billups/gorp.v2
 
 go 1.12
 
 require (
+	github.com/Billups/gorp v1.7.3
 	github.com/apoydence/onpar v0.0.0-20190519213022-ee068f8ea4d1
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/lib/pq v1.1.1

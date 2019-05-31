@@ -19,10 +19,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Billups/gorp"
 	"github.com/apoydence/onpar"
 	"github.com/apoydence/onpar/expect"
 	"github.com/apoydence/onpar/matchers"
-	"github.com/go-gorp/gorp"
 )
 
 func TestMySQLDialect(t *testing.T) {
